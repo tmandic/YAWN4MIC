@@ -51,6 +51,7 @@ extern "C" {
 #define DYNPD 0x1C
 #define FEATURE 0x1D    
 
+void nRF_Setup();
 void FlushTXRX();
 void WriteRegister(uint8_t reg, uint8_t val);
 void WriteAddress(uint8_t reg, uint8_t num, uint8_t* addr);

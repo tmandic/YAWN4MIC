@@ -46,6 +46,7 @@
 /******************************************************************************/
 void main(void)
 {
+        
     /* Configure the oscillator for the device */
     ConfigureOscillator();
     /* Initialize I/O and Peripherals for application */  
@@ -54,12 +55,7 @@ void main(void)
     InitApp();        
     MUSHROOM_ON = 0;
     SW = 0;    
-    IRQ = 1;
-    
-    
-    INTCONbits.IOCIE = 0;       // Disable IOC Interrupts 
-    IOCBFbits.IOCBF5 = 0;       // clear flags
-    INTCONbits.IOCIF = 0;   
+    IRQ = 1;       
 
     // indicate 
     REDLED = 1; // turn ON red LED   
@@ -69,24 +65,7 @@ void main(void)
     REDLED = 1; // turn ON red LED   
     __delay_ms(40);
     REDLED = 0; // turn OFF red LED                  
-    // send message
-    CE = 0;
-    SPI_init();
-    nRF_Setup(); 
-    FlushTXRX();
-    WriteRegister(NRF_STATUS,0x70);         // Reset status register
-    __delay_ms(2);
-    CE = 1;
-    __delay_us(150);         
-    data[0] = MUSHADD;
-    data[1] = SW;
-    //data[2] = 8;
-    //WritePayload(3, data); 
-    WritePayload(2, data); 
-    __delay_ms(5);  
-    FlushTXRX();
-    WriteRegister(NRF_CONFIG, 0x00);        // turn off module
-    __delay_ms(5);                
+    
     // go to sleep
     SW = 0;    
     
@@ -96,113 +75,81 @@ void main(void)
     LATCbits.LATC1 = 1;                 // switch C 0
     TRISCbits.TRISC0 = 0;               // switch D out    
     LATCbits.LATC0 = 1;                 // switch D 0     */
-    SLEEP();
     
-    GREENLED = 0; 
-    REDLED = 0; 
-    uint8_t data[2];
+    INTCONbits.IOCIE = 1;               // Enable IOC Interrupts 
+    INTCONbits.IOCIF = 0;   
+    SLEEP();        
         
     while(1)
     {
-        // turned OFF (timer timeout) or after initialization
-        if (MUSHROOM_ON == 0 && SW == 0)
-        {    
-            PIE1bits.TMR1IE = 0;                    // Disable interrupt  
-            PIR1bits.TMR1IF = 0;                    // clear flag    
+        if ((SW == 1) || (SW == 2) || (SW == 3) || (SW == 4))
+        {       
+            INTCONbits.IOCIE = 0;    
+            // send message
+            CE = 0;
+            SPI_init();
+            nRF_Setup(); 
+            FlushTXRX();
+            WriteRegister(NRF_STATUS,0x70);         // Reset status register
+            __delay_ms(2);
+            CE = 1;
+            __delay_us(150);         
+                
+            uint8_t data[4] = {0,0,3,13};           // four bytes to be compatible to developed USB hub (3 - arbitrarly, 13 - terminator)
+            data[0] = MUSHADD;
+            data[1] = SW;
+            WritePayload(4, data); 
+            __delay_ms(5);  
+            FlushTXRX();
+            WriteRegister(NRF_CONFIG, 0x00);        // turn off module
+            __delay_ms(5);                            
+            
+            SW = 0;
             
             GREENLED = 1; // turn ON red LED   
             __delay_ms(50);
             GREENLED = 0; // turn OFF red LED  
             REDLED = 1; // turn ON green LED  
             __delay_ms(50);
-            REDLED = 0; // turn OFF green LED                   
+            REDLED = 0; // turn OFF green LED              
             
-            IOCBFbits.IOCBF5 = 0;       // clear flag                        
-            IOCBFbits.IOCBF7 = 0;       // clear flag
-            INTCONbits.IOCIF = 0;       // clear flag
-            INTCONbits.IOCIE = 1;       // Enable IOC Interrupts 
-            TMR1H = 0x00;           
-            TMR1L = 0x00; 
-            TMR_CNT = 0;
-            SPI_init();            
-            WriteRegister(NRF_CONFIG, 0x00); // turn off module
-            __delay_ms(2);
-            CE = 1;
-            __delay_us(150);           
-            InitApp();       
-            CSN = 1;                    // pin CSN disable
-            CE = 0;                     // pin CE disable    
-            GREENLED = 0; // turn OFF red LED              
-            REDLED = 0; // turn OFF green LED 
-            IRQ = 1;
-            TRISBbits.TRISB4 = 0;             // SDI , out
-            TRISBbits.TRISB6 = 0;             // SCK , out
-            SDI = 0;
-            SCK = 0;
-            // reduce interference (cannot be output 0 because of switch)
-            /*TRISBbits.TRISB7 = 0;               // switch B out
-            LATBbits.LATB7 = 1;                 // switch B 0
-            TRISCbits.TRISC1 = 0;               // switch C out
-            LATCbits.LATC1 = 1;                 // switch C 0
-            TRISCbits.TRISC0 = 0;               // switch D out    
-            LATCbits.LATC0 = 1;                 // switch D 0    */
-            SLEEP();   
-        }        
-        // turned ON
-        else if (MUSHROOM_ON == 0 && SW == 5)
-        {
-            INTCONbits.IOCIE = 0;       // Disable IOC Interrupts       
-            IOCBFbits.IOCBF5 = 0;       // clear flag                        
-            INTCONbits.IOCIF = 0;       // clear flag            
-            MUSHROOM_ON = 1; 
-            SW = 0;             
-            REDLED = 1; // turn ON red LED   
-            __delay_ms(50);
-            REDLED = 0; // turn OFF red LED  
-            GREENLED = 1; // turn ON green LED  
-            __delay_ms(50);
-            GREENLED = 0; // turn OFF green LED              
-            __delay_ms(50);
-                        
-            // Enable IOC interrupts
-            while (IOCBFbits.IOCBF5 == 1)
-            {
-                IOCBFbits.IOCBF5 = 0;
-                INTCONbits.IOCIF = 0;       
-            }  
-            __delay_ms(50);
-            while (IOCBFbits.IOCBF5 == 1)
-            {
-                IOCBFbits.IOCBF5 = 0;
-                INTCONbits.IOCIF = 0;       
-            }      
-            INTCONbits.IOCIE = 1;       // EN IOC Interrupts                 
-            
-            timer_setup_and_start_IE();
-        }        
-        else if (MUSHROOM_ON == 1 && PORTBbits.RB7 == 1)       
-        {
-            SW = 2;
-        }        
-        // switch D
-        else if (MUSHROOM_ON == 1 && PORTCbits.RC0 == 1)       
-        {
-            SW = 4;
+            INTCONbits.IOCIF = 0; 
+            IOCAFbits.IOCAF0 = 0;
+            IOCAFbits.IOCAF1 = 0;        
+            IOCBFbits.IOCBF5 = 0;
+            IOCBFbits.IOCBF7 = 0;
+            INTCONbits.IOCIF = 0;
+            INTCONbits.IOCIE = 1;    
         }
-        // switch C
-        else if (MUSHROOM_ON == 1 && PORTCbits.RC1 == 1)       // switch C
-        {
-            SW = 3;
-        }        
-        else if (MUSHROOM_ON == 1)
-        {
-            if ((SW == 1) || (SW == 2) || (SW == 3) || (SW == 4))
-            {      
-                
-
-                timer_setup_and_start_IE();
-                //MUSHROOM_ON = 0;
-            }
-        }                                
-    }        
+        TRISCbits.TRISC0 = 0;               // ICSPDAT
+        LATCbits.LATC0 = 0;
+        TRISCbits.TRISC1 = 0;               // ICSPCLK
+        LATCbits.LATC1 = 0;
+        TRISCbits.TRISC2 = 0;
+        LATCbits.LATC2 = 0;
+        TRISCbits.TRISC3 = 0;
+        LATCbits.LATC3 = 0;
+        TRISCbits.TRISC4 = 0;               // green led output
+        LATCbits.LATC4 = 0;
+        TRISCbits.TRISC5 = 0;               // red led output
+        LATCbits.LATC5 = 0;
+        TRISCbits.TRISC6 = 0;               // CSN, chip select not, port RC6, izlazni
+        LATCbits.LATC6 = 0;
+        TRISCbits.TRISC7 = 0;               // SDO, serial data output, port RC7, izlazni
+        LATCbits.LATC7 = 0;
+        
+        TRISAbits.TRISA5 = 0;               // IRQ = 1 turn off sensors           
+        LATAbits.LATA5 = 0;
+        TRISAbits.TRISA4 = 0;               // CE, chip enable, port RA4, izlazni
+        LATAbits.LATA4 = 0;
+        
+        TRISBbits.TRISB4 = 0;
+        LATBbits.LATB4 = 0;
+        TRISBbits.TRISB5 = 1;               // switch A
+        TRISBbits.TRISB6 = 0;
+        LATBbits.LATB6 = 0;
+        TRISBbits.TRISB7 = 1;               // switch B                     
+        SLEEP();
+    }
 }
+

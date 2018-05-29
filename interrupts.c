@@ -12,7 +12,7 @@
 #include <stdbool.h>        /* For true/false definition */
 #include "user.h"
 #include "system.h"
-//#include <pic16lf1459.h>
+#include <pic16lf1459.h>
 
 /******************************************************************************/
 /* Interrupt Routines                                                         */
@@ -36,27 +36,53 @@ void interrupt isr(void)
     if(INTCONbits.IOCIF)
     {
         INTCONbits.IOCIF = 0;  
-        if (IOCBFbits.IOCAF0 == 1) // switch A connected to RA0
+        if (IOCAFbits.IOCAF0 == 1) // switch A connected to SWC (RA0)
         {                        
-            IOCBFbits.IOCAF0 = 0; // clear flag                        
-            SW = 1;
+            IOCAFbits.IOCAF0 = 0; // clear flag                        
+            if ((SW == 0) & (PORTAbits.RA0 == 1))
+            {
+                SW = 1;
+            }
         }
-        if (IOCBFbits.IOCAF1 == 1) // switch B connected to RA1
+        if (IOCAFbits.IOCAF1 == 1) // switch B connected to SWD (RA1)
         {
-            IOCBFbits.IOCAF1 = 0; // clear flag
-            SW = 2;
+            IOCAFbits.IOCAF1 = 0; // clear flag
+            if ((SW == 0) & (PORTAbits.RA1 == 1))
+            {
+                SW = 2;
+            }
         }   
-        if (IOCBFbits.IOCBF5 == 1) // switch C connected to RB5
+        if (IOCBFbits.IOCBF5 == 1) // switch C connected to SWA (RB5)
         {
             IOCBFbits.IOCBF5 = 0; // clear flag
-            SW = 3;
+            if ((SW == 0) & (PORTBbits.RB5 == 1))
+            {
+                SW = 3;
+            }
         }
-        if (IOCBFbits.IOCBF7 == 1) // switch D connected to RB7
+        if (IOCBFbits.IOCBF7 == 1) // switch D connected to SWB (RB7)
         {
             IOCBFbits.IOCBF7 = 0; // clear flag
-            SW = 4;            
+            if ((SW == 0) & (PORTBbits.RB7 == 1))
+            {
+                SW = 4;
+            }         
         }          
     } 
+    /*
+    //Timer1
+    if (PIR1bits.TMR1IF) 
+    {
+        PIR1bits.TMR1IF = 0;        // clear flag           
+        TMR_CNT = TMR_CNT + 1;
+        if (TMR_CNT > 16)
+        {
+            INTCONbits.IOCIE = 0;       // Disable IOC Interrupts     
+            MUSHROOM_ON = 0;
+            SW = 0;            
+        }      
+    }   
+    */
 }
 
   

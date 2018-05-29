@@ -24,67 +24,47 @@ void InitApp(void)
     ANSELB = 0x00; // Turn off analog inputs port B
     ANSELC = 0x00; // Turn off analog inputs port C
 
-    // PIC16(L)F1459
+    // YAWN3
+    // SWITCH A (SWA): 
+    // RX/DT - RB5 (J2) - IOC     
+    
+    // SWITCH B (SWB):    
+    // TX/CK - RB7 (J4) - IOC
 
-    // SWITCH B (SWD):
-    // RA1/D- (JP3)- IOC
-    // RB7/TXCK (JP4) - IOC
+    // SWITCH C (SWC):
+    // D+ - RA0 - IOC
 
-    // SWITCH A (SWC): 
-    // RA0/D+ (JP1) - IOC 
-    // RB5/RXDX (JP2) - IOC
+    // SWITCH D (SWD): 
+    // D- - RA1 - IOC
 
-    // SWITCH D (SWB):
-    // RC0/ICSPDAT - no INT
-
-    // SWITCH C (SWA): 
-    // RC1/ICSPCLK - INT
-
-    //TRISCbits.TRISC0 = UNUSED_TRIS;   // switch D
-    //TRISCbits.TRISC1 = UNUSED_TRIS;   // switch C
+    TRISCbits.TRISC0 = 0;               // ICSPDAT
+    TRISCbits.TRISC1 = 0;               // ICSPCLK
     TRISCbits.TRISC2 = UNUSED_TRIS;
     TRISCbits.TRISC3 = UNUSED_TRIS;
-    //TRISCbits.TRISC4 = UNUSED_TRIS;   // green led output
-    //TRISCbits.TRISC5 = UNUSED_TRIS;   // red led output
-    //TRISCbits.TRISC6 = UNUSED_TRIS;   // CSN, chip select not, port RC6, izlazni
-    TRISCbits.TRISC7 = UNUSED_TRIS;     // SDO, serial data output, port RC7, izlazni
-    
-    TRISCbits.TRISC0 = 1;               // switch D
-    TRISCbits.TRISC1 = 1;               // switch C
-    //TRISCbits.TRISC2 = UNUSED_TRIS;
-    //TRISCbits.TRISC3 = UNUSED_TRIS;
     TRISCbits.TRISC4 = 0;               // green led output
     TRISCbits.TRISC5 = 0;               // red led output
     TRISCbits.TRISC6 = 0;               // CSN, chip select not, port RC6, izlazni
-    //TRISCbits.TRISC7 = 0;             // SDO, serial data output, port RC7, izlazni
+    TRISCbits.TRISC7 = UNUSED_TRIS;     // SDO, serial data output, port RC7, izlazni
     
-    //TRISAbits.TRISA5 = UNUSED_TRIS;        
-    TRISAbits.TRISA5 = 0;               // IRQ = 1 turn off sensors        
-    //TRISAbits.TRISA4 = UNUSED_TRIS;   // CE, chip enable, port RA4, izlazni
-    
-    //TRISAbits.TRISA5 = UNUSED_TRIS;        
+    TRISAbits.TRISA5 = 0;               // IRQ = 1 turn off sensors           
     TRISAbits.TRISA4 = 0;               // CE, chip enable, port RA4, izlazni
 
     TRISBbits.TRISB4 = UNUSED_TRIS;
-    //TRISBbits.TRISB5 = UNUSED_TRIS;
-    TRISBbits.TRISB6 = UNUSED_TRIS;
-    //TRISBbits.TRISB7 = UNUSED_TRIS;
-     
-    //TRISBbits.TRISB4 = 1;             // SDI , serial data input,  port RB4, ulazni
     TRISBbits.TRISB5 = 1;               // switch A
-    //TRISBbits.TRISB6 = 0;             // SCK ,clock, port RB6, izlazni
-    TRISBbits.TRISB7 = 1;               // switch B
-   
+    TRISBbits.TRISB6 = UNUSED_TRIS;
+    TRISBbits.TRISB7 = 1;               // switch B             
+    
     // INTERRUPT-ON-CHANGE PORTB POSITIVE EDGE REGISTER
-    IOCBPbits.IOCBP5 = 1;       
+    IOCAPbits.IOCAP0 = 1;               // switch C   
+    IOCAPbits.IOCAP1 = 1;               // switch D   
+    IOCBPbits.IOCBP5 = 1;               // switch A   
+    IOCBPbits.IOCBP7 = 1;               // switch B
     
     //Enable interrupts
     INTCONbits.IOCIE = 1;       // Enable IOC Interrups    
     INTCONbits.PEIE = 1;        // Enable Perpherial Interrups
     INTCONbits.GIE = 1;         // Enable Global Interrupt
-    
-    
-   
+           
 }
 
 void timer_setup_and_start_IE(void)

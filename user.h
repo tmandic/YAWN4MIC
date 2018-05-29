@@ -12,7 +12,7 @@
 #define SCK         LATBbits.LATB6
 
 #define UNUSED_TRIS 0
-#define MUSHADD     0x0A
+#define MUSHADD     0x03
 /******************************************************************************/
 /* User Function Prototypes                                                   */
 /******************************************************************************/

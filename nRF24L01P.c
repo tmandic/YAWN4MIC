@@ -32,7 +32,7 @@ void nRF_Setup()
     WriteRegister(RF_CH, 0x14);                 // Channel 20 --> 2.4 GHz + 20 MHz
     WriteRegister(RF_SETUP, 0x06);              // 1 Mbps, 0 dBm
     WriteRegister(NRF_STATUS,0x70);             // Reset status register
-    WriteRegister(RX_PW_P0, 0x02);              // Number of bytes in RX payload in data pipe 0
+    WriteRegister(RX_PW_P0, 0x04);              // Number of bytes in RX payload in data pipe 0
     WriteRegister(NRF_CONFIG,0x7A);             // pwr_up , ptx, en crc, 1 byte, interrupt not reflected
     __delay_ms(2); //POWER-ON TIME 1.5ms specified
     
